@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import openai
 
-openai.api_key = "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"
+openai.api_key = "open AI api key goes here"
 
 app = FastAPI()
 
