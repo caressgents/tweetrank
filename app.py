@@ -1,26 +1,37 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import openai
 
-openai.api_key = "open AI api key goes here"
+openai.api_key = "api key here"
 
 app = FastAPI()
 
-# Add the CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this value to restrict access to specific origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class Tweet(BaseModel):
-    content: str
 
-@app.post("/rank_tweet")
-async def rank_tweet(tweet: Tweet):
+
+class InputData(BaseModel):
+    user_text: str
+
+@app.post("/generate")
+async def generate_text(input_data: InputData):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=input_data.user_text,
+        max_tokens=500,
+        n=1,
+        stop=None,
+        temperature=0.8,
+    )
+    message = response.choices[0].text.strip()
+    return {"generated_text": message}
     javascript_code = """
     import { compact } from "lodash"
 
@@ -412,3 +423,4 @@ Show the tweet"""
     )
 
     return {"revised_tweets": response.choices[0].text.strip()}
+
