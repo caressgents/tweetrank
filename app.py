@@ -1,42 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 import openai
 
-openai.api_key = "api key here"
+openai.api_key = "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"
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class Tweet(BaseModel):
+    content: str
 
-
-
-class InputData(BaseModel):
-    user_text: str
-
-@app.post("/generate")
-async def generate_text(input_data: InputData):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=input_data.user_text,
-        max_tokens=500,
-        n=1,
-        stop=None,
-        temperature=0.8,
-    )
-    message = response.choices[0].text.strip()
-    return {"generated_text": message}
-    javascript_code = """
-    import { compact } from "lodash"
-
+@app.post("/rank_tweet")
+async def rank_tweet(tweet: Tweet):
+    javascript_code = """ import { compact } from "lodash"
 import Sentiment from "sentiment"
-
 export function rank(tweet: string): RankResponse {
   const parsedTweet = tweet.toLowerCase()
   // Default score
@@ -101,7 +77,6 @@ export function rank(tweet: string): RankResponse {
     }
   }
 }
-
 // ---------------------------
 // Rules
 // Can return any value between -100 and 100
@@ -109,7 +84,6 @@ export function rank(tweet: string): RankResponse {
 // Add new rules here!
 // Returning 0 has no impact on score
 // ---------------------------
-
 /**
  * Always talk about Elon in a positive light.
  */
@@ -131,7 +105,6 @@ function elon({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Always talk about Tesla in a positive light.
  */
@@ -153,7 +126,6 @@ function tesla({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Favor tweets that use emojis Elon likes!
  */
@@ -175,7 +147,6 @@ function emojis({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Promote negative content because it's more likely to go viral.
  * Hide anything positive or uplifting.
@@ -211,7 +182,6 @@ function sentiment({ tweet, sentiment }: TweetData): Rank {
     }
   }
 }
-
 /**
  * Prefer awful threads
  */
@@ -226,7 +196,6 @@ function thread({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Prioritize douchey tweet formatting.
  */
@@ -244,7 +213,6 @@ function lineBreaks({ tweet, sentiment }: TweetData): Rank {
     }
   }
 }
-
 /**
  * Favor absolutism. Nuance is dead baby.
  */
@@ -274,7 +242,6 @@ function confidence({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * No self-awareness allowed!
  */
@@ -295,7 +262,6 @@ function noDoubt({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Be bold and loud!
  */
@@ -312,7 +278,6 @@ function exclamations({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * Don't ask questions!
  */
@@ -329,7 +294,6 @@ function questions({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * We like the nihilistic energy of all lowercase.
  */
@@ -345,7 +309,6 @@ function lowercase({ originalTweet }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * We love an all caps tweet.
  */
@@ -361,7 +324,6 @@ function uppercase({ originalTweet }: TweetData): Rank {
     score: 0,
   }
 }
-
 /**
  * A little hazing never hurt anyone.
  */
@@ -383,7 +345,7 @@ function hazing({ tweet, sentiment }: TweetData): Rank {
     score: 0,
   }
 }
-    """
+        """
 
     prompt = f"""Here is the tweet: {tweet.content}
 
@@ -423,4 +385,3 @@ Show the tweet"""
     )
 
     return {"revised_tweets": response.choices[0].text.strip()}
-
